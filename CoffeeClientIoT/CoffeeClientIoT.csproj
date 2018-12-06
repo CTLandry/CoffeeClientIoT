@@ -10,4 +10,8 @@
     <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.18.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\CoffeeCommon\CoffeeCommon.csproj" />
+  </ItemGroup>
+
 </Project>

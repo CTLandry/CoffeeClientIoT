@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using CoffeeCommon;
 using Microsoft.Azure.EventHubs;
 using Microsoft.Azure.EventHubs.Processor;
 
@@ -9,17 +10,14 @@ namespace CoffeeMessageProcessor
     {
         static async Task Main(string[] args)
         {
-            var hubName = "HUB_NAME";
-            var iotHubConnectionString = "HUB_ENDPOINT";
-            var storageConnectionString = "STORAGE_CONNECTIONSTRING";
             var storageContainerName = "message-processor-host";
             var consumerGroupName = PartitionReceiver.DefaultConsumerGroupName;
 
             var processor = new EventProcessorHost(
-                hubName,
+                MyAzure.hubName,
                 consumerGroupName,
-                iotHubConnectionString,
-                storageConnectionString,
+                MyAzure.iotHubConnectionString,
+                MyAzure.storageConnectionString,
                 storageContainerName);
 
             await processor.RegisterEventProcessorAsync<CoffeeDispensedEventProcessor>();

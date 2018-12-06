@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using CoffeeCommon;
 using Microsoft.Azure.EventHubs;
 using Microsoft.Azure.EventHubs.Processor;
+using Newtonsoft.Json;
 
 namespace CoffeeMessageProcessor
 {
@@ -49,11 +51,37 @@ namespace CoffeeMessageProcessor
                                   $"device ID: '{deviceID}' " +
                                   $"data: '{data}' ");
 
+                var coffeedispenseddata = JsonConvert.DeserializeObject<CoffeeDispensedData>(data);
+                PushDataOntoVendorResponsibleForRefillOfType(coffeedispenseddata.CoffeeType);
 
             }
 
             return context.CheckpointAsync();
-            
+
+        }
+
+        private Task PushDataOntoVendorResponsibleForRefillOfType(CoffeeDescription.CoffeeType type)
+        {
+            switch (type)
+            {
+                case CoffeeDescription.CoffeeType.Latte:
+                    {
+                        Console.WriteLine("Latte logistics notified of devices latte level at location");
+                        break;
+                    }
+                case CoffeeDescription.CoffeeType.Espresso:
+                    {
+                        Console.WriteLine("Espresso logistics notified of devices espresso level at location");
+                        break;
+                    }
+                default:
+                    {
+                        Console.WriteLine("Black do nothing, local vendor refills");
+                        break;
+                    }
+            }
+
+            return Task.CompletedTask;
         }
     }
 }

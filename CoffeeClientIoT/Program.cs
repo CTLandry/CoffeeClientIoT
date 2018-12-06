@@ -2,15 +2,16 @@
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using CoffeeCommon;
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 
 namespace CoffeeClientIoT
 {
     class Program
     {
-        private const string Machine01ConnectionString =
-            "DEVICE_CONNECTIONSTRING";
+
 
         static async Task Main(string[] args)
         {
@@ -19,34 +20,87 @@ namespace CoffeeClientIoT
 
             Console.WriteLine("Coffee Machine 01 Connected!");
 
-            for (int i = 0; i < 5; i++)
-            {
+            await UpdateTwin(deviceclient);
 
-                DataPayload payload = new DataPayload("black");
-                await SendMessageToHub(payload, deviceclient);
-                Thread.Sleep(2000);
+            Console.WriteLine("Select a coffee type: ");
+            Console.WriteLine("b: Black");
+            Console.WriteLine("e: Espresso");
+            Console.WriteLine("l: Latte");
+            Console.WriteLine("q: Quit");
+
+            var quitRequested = false;
+            while (!quitRequested)
+            {
+               
+                var input = Console.ReadKey().KeyChar;
+                Console.WriteLine();
+
+                CoffeeDispensedData payload;
+
+                switch (Char.ToLower(input))
+                {
+                    case 'b':
+                        {
+                            payload = new CoffeeDispensedData(CoffeeDescription.CoffeeType.Black, 120.010, 80.11);
+                            await SendMessageToHub(payload, deviceclient);
+                           
+                            break;
+                        }
+                    case 'e':
+                        {
+                            payload = new CoffeeDispensedData(CoffeeDescription.CoffeeType.Espresso, 120.010, 80.11);
+                            await SendMessageToHub(payload, deviceclient);
+                          
+                            break;
+                        }
+                    case 'l':
+                        {
+                            payload = new CoffeeDispensedData(CoffeeDescription.CoffeeType.Latte, 120.010, 80.11);
+                            await SendMessageToHub(payload, deviceclient);
+                           
+                            break;
+                        }
+                    case 'q':
+                        {
+                            quitRequested = true;
+                            break;
+                        }
+                }
+
+             
+
             }
 
-            Console.WriteLine("Press any key to exit....");
 
-            Console.ReadKey();
+
+
+
         }
 
         private static async Task<DeviceClient> GetDeviceClient()
         {
 
-            var device = DeviceClient.CreateFromConnectionString(Machine01ConnectionString);
+            var device = DeviceClient.CreateFromConnectionString(MyAzure.Machine01ConnectionString);
 
             await device.OpenAsync();
 
             return device;
         }
 
-        private static async Task SendMessageToHub(DataPayload message, DeviceClient device)
+        private static async Task SendMessageToHub(CoffeeDispensedData message, DeviceClient device)
         {
             await device.SendEventAsync(new Message(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject((message)))));
-            
-            Console.WriteLine($"CoffeeType: {message.CoffeeTypeDispensed}");
+
+            Console.WriteLine($"Order: {message.CoffeeType} sent!");
+        }
+
+        private static async Task UpdateTwin(DeviceClient device)
+        {
+            var twinProperties = new TwinCollection();
+            twinProperties["connectiontype"] = "wi-fi";
+            twinProperties["connectionStrength"] = "full";
+
+            await device.UpdateReportedPropertiesAsync(twinProperties);
         }
     }
 }

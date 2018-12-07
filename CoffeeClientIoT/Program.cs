@@ -15,8 +15,10 @@ namespace CoffeeClientIoT
 
         static async Task Main(string[] args)
         {
+            Console.WriteLine("***IoT SIMULATED DEVICE***");
             Console.WriteLine("Initializing Coffee Machine 01...");
             var deviceclient = await GetDeviceClient();
+            var receiveEventstask = ReceiveEvents(deviceclient);
 
             Console.WriteLine("Coffee Machine 01 Connected!");
 
@@ -101,6 +103,28 @@ namespace CoffeeClientIoT
             twinProperties["connectionStrength"] = "full";
 
             await device.UpdateReportedPropertiesAsync(twinProperties);
+        }
+
+        private static async Task ReceiveEvents(DeviceClient device)
+        {
+            while (true)
+            {
+                var message = await device.ReceiveAsync();
+
+                if (message == null)
+                {
+                    continue;
+                }
+
+                var messagebody = message.GetBytes();
+
+                var payload = Encoding.ASCII.GetString(messagebody);
+
+                Console.WriteLine($"Received message from cloud: '{payload}'");
+
+                await device.CompleteAsync(message);
+
+            }
         }
     }
 }

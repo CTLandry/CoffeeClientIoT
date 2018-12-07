@@ -10,6 +10,7 @@ namespace CoffeeMessageProcessor
     {
         static async Task Main(string[] args)
         {
+            Console.WriteLine("***CLOUD MESSAGE PROCESSOR CONSOLE (D2C Processing)***");
             var storageContainerName = "message-processor-host";
             var consumerGroupName = PartitionReceiver.DefaultConsumerGroupName;
 
